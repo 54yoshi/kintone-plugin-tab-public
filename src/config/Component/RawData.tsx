@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './RawData.css';
 import { EditLayoutItem, TabSettings, EditFormLayout, KintoneRecord, SubtableFieldProperty} from '../../kintoneDataType';
-import TabSelector from './parts/tabSelector';
+import TabSelector from './parts/TabSelector';
 
 type Props = {
   rowData: EditLayoutItem;

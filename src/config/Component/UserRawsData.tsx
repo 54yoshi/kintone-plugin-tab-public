@@ -1,7 +1,7 @@
 import React from 'react';
 import { EditFormLayout, TabSettings, KintoneRecord } from '../../kintoneDataType';
 import RawData from './RawData';
-import { Tab } from './parts/tab';
+import { Tab } from './parts/Tab';
 
 interface Props {
   editFormData: EditFormLayout | null;

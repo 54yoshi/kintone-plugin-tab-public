@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import Config from './config'; 
+import Config from './Config'; 
 
 const container = document.getElementById('kintonePlugin');
 if (container) {

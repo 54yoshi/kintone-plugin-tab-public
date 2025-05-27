@@ -1,15 +1,15 @@
-import './config.css';
+import './Config.css';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { isEqual, cloneDeep } from 'lodash';
 import { KintoneRecord, FormLayout, EditFormLayout, TabSettings } from '../kintoneDataType';
 import { findSpaceField } from './hooks/hooks';
-import Toast from './configComponent/parts/toast';
-import UserRawsData from './configComponent/UserRawsData';
-import DropDown from './configComponent/parts/DropDown';
-import ColorConfig from './configComponent/parts/colorConfig';
-import CancelButton from './configComponent/parts/CancelButton';
-import SubmitButton from './configComponent/parts/SubmitButton';
-import Alert from './configComponent/parts/alert';
+import Toast from './Component/parts/Toast';
+import UserRawsData from './Component/UserRawsData';
+import DropDown from './Component/parts/DropDown';
+import ColorConfig from './Component/parts/ColorConfig';
+import CancelButton from './Component/parts/CancelButton';
+import SubmitButton from './Component/parts/SubmitButton';
+import Alert from './Component/parts/alert';
 
 const PLUGIN_ID = kintone.$PLUGIN_ID;
 const appId = kintone.app.getId();
@@ -80,6 +80,7 @@ const Config: React.FC = () => {
           backgroundColor: '#66767E', 
           fontColor: '#ffffff', 
           spaceField: '', 
+          
           tabs: [{startRowIndex: 0, tabName: 'タブ１'}]
         });
         setEditFormData(null); 
