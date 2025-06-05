@@ -132,7 +132,7 @@
   kintone.events.on([
     'mobile.app.record.detail.show', 
     'mobile.app.record.edit.show',
-    'mobile.app.record.create.show',
+    'mobile.app.record.create.show',f
   ], async function() {
     const appId = kintone.mobile.app.getId();
     if(!pluginConfig){
