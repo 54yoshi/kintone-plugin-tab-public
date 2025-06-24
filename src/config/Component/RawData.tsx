@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import './RawData.css';
 import { EditLayoutItem, TabSettings, EditFormLayout, KintoneRecord, SubtableFieldProperty} from '../../kintoneDataType';
-import TabSelector from './parts/TabSelector';
 
 type Props = {
   rowData: EditLayoutItem;
@@ -18,11 +17,8 @@ const RawData: React.FC<Props> = ({
     formIndex,
     tabSettings, 
     setTabSettings, 
-    editFormData,
-    setEditFormData,
     recordData
 }) => {
-  const [isTabSelectorOpen, setIsTabSelectorOpen] = useState<boolean >(false);
   const [onMouse, setOnMouse] = useState<boolean>(false);
   const [isFirstRow, setIsFirstRow] = useState<boolean>(false);
 
@@ -51,17 +47,6 @@ const RawData: React.FC<Props> = ({
 
   return(
     <>
-      {isTabSelectorOpen ? (
-        <TabSelector 
-          tabSettings={tabSettings}
-          editFormData={editFormData}
-          setEditFormData={setEditFormData}
-          setIsTabSelectorOpen={setIsTabSelectorOpen}
-          rowData={rowData}
-        />
-      ) : (
-        null
-      )}
       <div 
         className='rawContainer'
         onMouseEnter={() => {

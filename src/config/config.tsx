@@ -2,7 +2,7 @@ import './Config.css';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { isEqual, cloneDeep } from 'lodash';
 import { KintoneRecord, FormLayout, EditFormLayout, TabSettings } from '../kintoneDataType';
-import { findSpaceField } from './hooks/hooks';
+import { findSpaceField } from './hooks/handleRecords';
 import Toast from './Component/parts/Toast';
 import UserRawsData from './Component/UserRawsData';
 import DropDown from './Component/parts/DropDown';
