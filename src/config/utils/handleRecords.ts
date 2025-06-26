@@ -12,6 +12,11 @@ import { FormLayout, EditFormLayout, KintoneRecord, SubtableFieldProperty, TabSe
     })
   }
 
+  export function getLowerSpaceIndex(form: FormLayout, spaceId: string){
+    const targetIndex = form.layout.findIndex(field => field.type === "ROW" && field.fields.some((field) => field?.elementId === spaceId));
+    return targetIndex;
+  }
+
   export function createNewData(form: FormLayout, record: KintoneRecord){
     const formNewData = {...form};
     const recordNewData = {...record};

@@ -1,5 +1,5 @@
 import React from "react";
-import './SubmitButton.css';
+import styles from './SubmitButton.module.css';
 
 type Props = {
   onClick: () => void;
@@ -11,11 +11,11 @@ type Props = {
 const SubmitButton = ({ onClick, text, color, borderColor }: Props) => {
   return (
     <div 
+      className={`${styles.saveButton} ${styles.submitButtonStyled}`} 
       style={{
         backgroundColor: color ?? '#3498db',
         border: `1px solid ${borderColor ?? '#3498db'}`,
-      }} 
-      className="saveButton" 
+      }}
       onClick={onClick}
     >
       {text}

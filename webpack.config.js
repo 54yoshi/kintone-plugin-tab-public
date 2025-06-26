@@ -20,7 +20,7 @@ module.exports = (env = {}) => {
       patterns: [
         { from: 'manifest.json', to: '' }, 
         { from: 'src/config/config.html', to: 'html/config.html' },
-        { from: 'src/config/index.css', to: 'css/config.css' },
+        { from: 'src/config/index.module.css', to: 'css/config.css' },
         { from: 'src/record/record.css', to: 'css/desktop.css' },
         { from: 'src/image/icon.png', to: 'image/icon.png' },
       ],
@@ -56,6 +56,46 @@ module.exports = (env = {}) => {
     resolve: {
       extensions: ['.tsx', '.ts', '.js'],
     },
+    // module: {
+    //   rules: [
+    //     {
+    //       test: /\.(ts|tsx)$/,
+    //       exclude: /node_modules/,
+    //       use: 'babel-loader',
+    //     },
+    //     {
+    //       test: /\.module\.css$/,
+    //       use: [
+    //         'style-loader',
+    //         {
+    //           loader: 'css-loader',
+    //           options: {
+    //             esModule: false,
+    //             modules: {
+    //               auto: true,
+    //               mode: 'local',
+    //               localIdentName: '[name]__[local]___[hash:base64:5]',
+    //             },
+    //           },
+    //         },
+    //       ],
+    //     },
+    //     {
+    //       test: /\.css$/,
+    //       exclude: /\.module\.css$/,
+    //       use: ['style-loader', 'css-loader'],
+    //     },
+    //     {
+    //       test: /\.(png|jpe?g|gif|svg)$/,
+    //       type: 'asset/resource',
+    //       generator: { filename: 'image/[name][ext]' },
+    //     },
+    //     {
+    //       test: /\.html$/,
+    //       use: 'html-loader',
+    //     },
+    //   ],
+    // },
     module: {
       rules: [
         {

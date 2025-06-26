@@ -11,3 +11,7 @@
 .saveButton:hover {
   opacity: 0.8;
 }
+
+.submit-button-styled {
+  /* 動的スタイル用：backgroundColor, borderはインラインで設定 */
+}

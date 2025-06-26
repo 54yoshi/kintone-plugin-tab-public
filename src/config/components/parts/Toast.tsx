@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './Toast.css';
+import styles from './Toast.module.css';
 
 type ToastProps = {
   message: string;
@@ -23,25 +23,12 @@ const Toast: React.FC<ToastProps> = ({ message, duration = 5000, backgroundColor
 
   return (
     <div
-      className='toastAnimation'
+      className={`${styles.toastAnimation} ${styles.toastContainer}`}
       style={{
-        position: 'fixed',
-        top: '100px',
-        left: '50%',
         backgroundColor: backgroundColor,    
-        color: '#ffffff',
-        padding: '16px 24px',
-        boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
-        zIndex: 10000,
-        fontSize: '16px',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minWidth: '700px',
       }}
     >
-      <span
-      >
+      <span>
         {message}
       </span>
     </div>

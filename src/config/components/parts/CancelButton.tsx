@@ -1,5 +1,5 @@
 import React from "react";
-import './CancelButton.css';
+import styles from './Cancelbutton.module.css';
 
 type Props = {
   onClick: () => void;
@@ -9,12 +9,8 @@ type Props = {
 const CancelButton = ({ onClick, text }: Props) => {
   return (
     <div 
-    className="cancelButton" 
+    className={`${styles.cancelButton} ${styles.cancelButtonStyled}`} 
     onClick={onClick}
-    style={{
-      width: 'max-content',
-      height: 'max-content',
-    }}
     >
       {text}
     </div>

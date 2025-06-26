@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { TabSettings } from '../../../kintoneDataType';
-import './colorConfig.css';
+import styles from './colorConfig.module.css';
 import ColorizeIcon from '@mui/icons-material/Colorize';
 
 type Props = {
@@ -29,42 +29,24 @@ const ColorPickerLabel = ({ font, colorType, tabSettings, setTabSettings }: Prop
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      gap: '0.62rem',
-      fontSize: '14px',
-      height: '100%',
-    }}>
+    <div className={styles.colorConfigContainer}>
       {font}
-      <label className="colorPickerLabel" onClick={handleLabelClick}>
-        <div 
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            paddingRight: '20px',
-          }}
-        >
+      <label className={styles.colorPickerLabel} onClick={handleLabelClick}>
+        <div className={styles.colorPickerInputContainer}>
           <div
-            className="colorPickerLabel-input"
+            className={styles.colorPickerLabelInput}
           >
             {tabSettings?.[colorType as keyof TabSettings] as string ?? '#66767E'}
           </div>
           <span
-            className="colorPickerLabel-square"
+            className={styles.colorPickerLabelSquare}
             style={{ backgroundColor: tabSettings?.[colorType as keyof TabSettings] as string ?? '#66767E' }}
           />
         </div>
-        <ColorizeIcon 
-          style={{
-            color: 'black',
-            fontSize: '20px',
-        }}/>
+        <ColorizeIcon className={styles.colorIconStyled}/>
         <input
           ref={colorInputRef}
-          className="colorPickerLabel-colorInput"
+          className={styles.colorPickerLabelColorInput}
           type="color"
           value={tabSettings?.[colorType as keyof TabSettings] as string}
           onChange={handleChangeColor}

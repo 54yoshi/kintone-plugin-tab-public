@@ -1,4 +1,4 @@
-import './tab.css';
+import styles from './Tab.module.css';
 import React, { useRef, useEffect} from 'react';
 import { TabSettings, EditFormLayout } from '../../../kintoneDataType';
 import CloseIcon from '@mui/icons-material/Close';
@@ -12,7 +12,7 @@ type Props = {
   setEditFormData: (editFormData: EditFormLayout | null) => void;
 }
 
-export const Tab = ({ 
+const Tab = ({ 
   tabSettings, 
   tab, 
   tabBoxIndex, 
@@ -53,20 +53,19 @@ export const Tab = ({
 
   return (
     <>
-    <div className='tabNameContainer'>
+    <div className={styles.tabNameContainer}>
       <div 
         style={{
           backgroundColor: tabSettings.backgroundColor ? tabSettings.backgroundColor : '#66767E',
-          padding: `${tab.startRowIndex === 0 ? '4px 20px' : '4px 10px 4px 20px'}`,
         }}
-        className='tabName'
+        className={`${styles.tabName} ${tab.startRowIndex === 0 ? styles.tabNameStyled : styles.tabNameStyledWithClose}`}
       >
         <input
-          className="tab"
+          className={`${styles.tab} ${styles.tabInputBase} ${styles.tabInputStyled}`}
           style={{
             backgroundColor: tabSettings.backgroundColor,
             color: tabSettings.fontColor ? tabSettings.fontColor : 'white',
-            borderBottom: `1px solid ${tabSettings.fontColor ?? 'white'}`,
+            borderBottomColor: tabSettings.fontColor ?? 'white',
           }}
           value={tabSettings.tabs[tabBoxIndex].tabName}
           maxLength={32}
@@ -92,31 +91,17 @@ export const Tab = ({
           autoFocus
         />
         <span 
-          style={{
-            position: 'absolute',
-            visibility: 'hidden',
-            height: 'auto',
-            whiteSpace: 'nowrap',
-            fontSize: '15px',
-            padding: '5px 0 2px 0',
-          }}
+          className={styles.tabInputTextMeasure}
           ref={spanRef}
         >
           {tabSettings.tabs[tabBoxIndex].tabName === '' ? `タブ${tabBoxIndex + 1}` : tabSettings.tabs[tabBoxIndex].tabName}
         </span>
-        <div 
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '7px'
-          }}
-        >
+        <div className={styles.tabActionsContainer}>
           {tab.startRowIndex === 0 ? null :
-          <div className='tabMarkDiv'>
+          <div className={styles.tabMarkDiv}>
             <CloseIcon
+              className={`${styles.tabCloseIcon} ${styles.tabCloseIconStyled}`}
               style={{
-                fontSize: '20px',
                 color: tabSettings.fontColor ? tabSettings.fontColor : 'white',
               }}
               onClick={deleteTabGroup}

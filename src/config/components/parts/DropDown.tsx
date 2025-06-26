@@ -1,8 +1,14 @@
 import React ,{ useState, useEffect, useRef } from 'react';
-import './DropDown.css';
+import styles from './DropDown.module.css';
 import CheckIcon from '@mui/icons-material/Check';
 import { 
-  EditFormLayout, FormLayout, KintoneRecord, TabSettings, LayoutItem } from '../../../kintoneDataType';
+  EditFormLayout, 
+  FormLayout, 
+  KintoneRecord, 
+  TabSettings, 
+  LayoutItem 
+} from '../../../kintoneDataType';
+import { getLowerSpaceIndex } from '../../utils/handleRecords';
 
 type InsertPositionSelectProps = {
   value?: string;
@@ -22,12 +28,13 @@ const DropDown: React.FC<InsertPositionSelectProps> = ({
   setTabSettings,
 }) => {
   const [spaceId, setSpaceId] = useState<string | null>(tabSettings?.spaceField || null);
+  
+  console.log('DropDown初期化:', {
+    'tabSettings.spaceField': tabSettings?.spaceField,
+    'spaceId': tabSettings?.spaceField || null
+  });
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  function getLowerSpaceIndex(form: FormLayout, spaceId: string){
-    const targetIndex = form.layout.findIndex(field => field.type === "ROW" && field.fields.some((field) => field?.elementId === spaceId));
-    return targetIndex;
-  }
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
@@ -51,36 +58,27 @@ const DropDown: React.FC<InsertPositionSelectProps> = ({
   }, [tabSettings.spaceField]);
 
   useEffect(() => {
-    if(spaceId === null){
+    if(spaceId === null || !fetchFormData){
       return;
     }
-    const spaceIndex = getLowerSpaceIndex(fetchFormData as FormLayout, spaceId);
+    const spaceIndex = getLowerSpaceIndex(fetchFormData, spaceId);
     
-    if(spaceIndex === null || !fetchFormData){
+    if(spaceIndex === -1){
       return;
     }
 
-    if (setEditFormData) {
-      setEditFormData(null);
-    }
-    setTabSettings({
-      isFollow: false, 
-      backgroundColor: '#66767E', 
-      fontColor: '#ffffff', 
-      spaceField: '', 
-      tabs: [{startRowIndex: 0, tabName: 'タブ１'}]
-    });
-
+    // editFormDataを更新
     const lowerLayout: LayoutItem[] = fetchFormData.layout.slice(spaceIndex + 1);
     const newFormData: FormLayout = {
       layout: lowerLayout,
       revision: fetchFormData.revision
     };
 
-    if ( newFormData!== undefined && setEditFormData) {
+    if (newFormData !== undefined && setEditFormData) {
       setEditFormData(newFormData);
     }
 
+    // tabSettingsを一度だけ更新
     if(tabSettings){
       setTabSettings({
         ...tabSettings,
@@ -104,34 +102,26 @@ const DropDown: React.FC<InsertPositionSelectProps> = ({
 
   return (
     <div 
-      className="insert-position"
+      className={styles.insertPosition}
       ref={dropdownRef}
     >
       <div>
-        <span className="insert-position__label">{font}</span>
-        <span style={{
-          color: 'red',
-          padding: '0 4px',
-        }}>
+        <span className={styles.insertPositionLabel}>{font}</span>
+        <span className={styles.requiredAsterisk}>
           *
         </span>
       </div>
       <div 
-        className={`insert-position__dropdown`}
+        className={styles.insertPositionDropdown}
         onClick={() => {
           setIsOpen(!isOpen);
         }}
       >
         {tabSettings?.spaceField !== '' ? tabSettings?.spaceField : 'スペースフィールドID'}
         {isOpen ? (
-          <div className="selectList" >
+          <div className={styles.selectList} >
             {!searchSpaceField(fetchFormData as FormLayout) ? (
-              <div 
-                style={{
-                  height: '30px',
-                  padding: '5px 20px',
-                }}
-              >
+              <div className={styles.noSpaceMessage}>
                 スペースが見つかりません
               </div>
             ) 
@@ -143,23 +133,14 @@ const DropDown: React.FC<InsertPositionSelectProps> = ({
                     return groupRow.fields.map((field, index) =>
                       field.type !== "SPACER" || field.elementId === '' ? null : (
                         <div
-                          className={field.elementId === tabSettings?.spaceField ? "selectedSpaceIdItem" : "spaceIdItem"}
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'flex-start',
-                            alignItems: 'center',
-                            gap: '8px',
-                            fontSize: '13px',
-                            padding: '5px 20px',
-                            cursor: 'pointer',
-                          }}
+                          className={field.elementId === tabSettings?.spaceField ? `${styles.selectedSpaceIdItem} ${styles.dropdownItem}` : `${styles.spaceIdItem} ${styles.dropdownItem}`}
                           key={`スペース-${index}`} 
                           onClick={() => {
                             setSpaceId(field.elementId as string);
                             setIsOpen(false);
                           }}
                         >
-                          {field.elementId === tabSettings?.spaceField ? <CheckIcon style={{fontSize: '13px'}} /> : null}
+                          {field.elementId === tabSettings?.spaceField ? <CheckIcon className={styles.checkIconStyled} /> : null}
                           {field.elementId}
                         </div>
                       )
@@ -169,22 +150,14 @@ const DropDown: React.FC<InsertPositionSelectProps> = ({
                   return layoutItem.fields.map((field, index) =>
                     field.type !== "SPACER" || field.elementId === '' ? null : (
                       <div 
-                        className={field.elementId === tabSettings?.spaceField ? "selectedSpaceIdItem" : "spaceIdItem"}
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'flex-start',
-                          alignItems: 'center',
-                          gap: '8px',
-                          fontSize: '13px',
-                          cursor: 'pointer',
-                        }}
+                        className={field.elementId === tabSettings?.spaceField ? `${styles.selectedSpaceIdItem} ${styles.dropdownItemGroup}` : `${styles.spaceIdItem} ${styles.dropdownItemGroup}`}
                         key={`スペース-${index}`}
                         onClick={() => {
                           setSpaceId(field.elementId as string);
                           setIsOpen(false);
                         }} 
                       >
-                        {field.elementId === tabSettings?.spaceField ? <CheckIcon style={{fontSize: '13px'}} /> : null}
+                        {field.elementId === tabSettings?.spaceField ? <CheckIcon className={styles.checkIconStyled} /> : null}
                         {field.elementId || 'スペース'}
                       </div>
                     )

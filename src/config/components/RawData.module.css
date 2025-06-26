@@ -162,3 +162,31 @@
     width: 25rem;
   }
 }
+
+/* RawData.tsx用のインラインスタイルクラス */
+.tab-action-container {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #C6E0F3;
+  gap: 10px;
+}
+
+.field-type-group {
+  border: 1px solid #ECA55A;
+  color: #ECA55A;
+}
+
+.field-type-subtable {
+  border: 1px solid #50C67D;
+  color: #50C67D;
+}
+
+.field-type-row {
+  border: 1px solid #4199D8;
+  color: #4199D8;
+}

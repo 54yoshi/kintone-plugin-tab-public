@@ -11,3 +11,7 @@
 .cancelButton:hover {
   background-color: #E6EAEA;
 }
+
+.cancel-button-styled {
+  /* 既存のcancelButtonクラスにwidth: max-content, height: max-contentが含まれている */
+}

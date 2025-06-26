@@ -1,7 +1,8 @@
 import React from 'react';
+import styles from './UserRawsData.module.css';
 import { EditFormLayout, TabSettings, KintoneRecord } from '../../kintoneDataType';
 import RawData from './RawData';
-import { Tab } from './parts/Tab';
+import Tab from './parts/Tab';
 
 interface Props {
   editFormData: EditFormLayout | null;
@@ -19,9 +20,7 @@ const UserRawsData: React.FC<Props> = ({
   recordData
 }) => {
   return(
-    <div style={{
-      padding: '0 15px',
-    }}>
+          <div className={styles.userRawsContainer}>
       <div>
         {tabSettings.tabs.map((tab, tabIndex) => (
             <div key={`userRawaData-${tabIndex}`}>
@@ -34,10 +33,10 @@ const UserRawsData: React.FC<Props> = ({
                 setEditFormData={setEditFormData}
               />
               <div 
-              style={{
-                border: `2px solid ${tabSettings.backgroundColor ? tabSettings.backgroundColor : '#66767E'}`,
-                borderRadius: '0 4px 4px 4px',
-              }}>
+                className={styles.tabContentBorder}
+                style={{
+                  border: `2px solid ${tabSettings.backgroundColor ? tabSettings.backgroundColor : '#66767E'}`,
+                }}>
                 {editFormData?.layout.map((data, formIndex) => (
                   tab.startRowIndex <= formIndex && formIndex < tabSettings.tabs[tabIndex + 1]?.startRowIndex || tab.startRowIndex <= formIndex && tabSettings.tabs[tabIndex + 1] === undefined ? 
                     <RawData

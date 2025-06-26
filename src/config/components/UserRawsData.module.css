@@ -1,0 +1,9 @@
+/* UserRawsData.tsx用のスタイル */
+.user-raws-container {
+  padding: 0 15px;
+  height: 100%;
+}
+
+.tab-content-border {
+  border-radius: 0 4px 4px 4px;
+} 

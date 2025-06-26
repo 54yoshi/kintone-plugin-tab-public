@@ -1,19 +1,25 @@
-import './Config.css';
+import styles from './Config.module.css';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { isEqual, cloneDeep } from 'lodash';
 import { KintoneRecord, FormLayout, EditFormLayout, TabSettings } from '../kintoneDataType';
-import { findSpaceField } from './utils/handleRecords';
-import Toast from './Component/parts/Toast';
-import UserRawsData from './Component/UserRawsData';
-import DropDown from './Component/parts/DropDown';
-import ColorConfig from './Component/parts/ColorConfig';
-import CancelButton from './Component/parts/CancelButton';
-import SubmitButton from './Component/parts/SubmitButton';
-import Alert from './Component/parts/alert';
+import { findSpaceField, getLowerSpaceIndex } from './utils/handleRecords';
+import { KINTONE_REST, KINTONE_UI_URLS } from './constants/endpoint';
+import Toast from './components/parts/Toast';
+import UserRawsData from './components/UserRawsData';
+import DropDown from './components/parts/DropDown';
+import ColorConfig from './components/parts/ColorConfig';
+import CancelButton from './components/parts/CancelButton';
+import SubmitButton from './components/parts/SubmitButton';
+import Alert from './components/parts/Alert';
 
 const PLUGIN_ID = kintone.$PLUGIN_ID;
 const appId = kintone.app.getId();
 const baseUrl = location.origin;
+
+type PluginConfig = {
+  tabSettings: string;
+  editFormData: string | null;
+}
 
 const Config: React.FC = () => {
   const [formData, setFormData] = useState<FormLayout | null>(null);
@@ -33,16 +39,10 @@ const Config: React.FC = () => {
   const initialConfigRef = useRef<{ tabSettings: TabSettings; editFormData: EditFormLayout | null }>(null);
 
   useEffect(() => {
-    const raw = kintone.plugin.app.getConfig(PLUGIN_ID);
+    const config = kintone.plugin.app.getConfig(PLUGIN_ID);
     const body = { app: appId };
-  
-    const initialTabSettings = raw.tabSettings
-      ? JSON.parse(raw.tabSettings)
-      : tabSettings;
-  
-    const initialEditFormData = raw.editFormData
-      ? JSON.parse(raw.editFormData) 
-      : null;
+
+    const { initialTabSettings, initialEditFormData } = parsePluginConfig(config);
   
     setTabSettings(initialTabSettings);
     setEditFormData(initialEditFormData);
@@ -53,13 +53,13 @@ const Config: React.FC = () => {
     };
 
     const fetchFormLayout = kintone.api(
-      kintone.api.url('/k/v1/preview/app/form/layout.json', true),
+      kintone.api.url(KINTONE_REST.GET_FORM_LAYOUT_PREVIEW, true),
       'GET',
       body
     );
   
     const fetchRecordData = kintone.api(
-      kintone.api.url('/k/v1/preview/app/form/fields.json', true),
+      kintone.api.url(KINTONE_REST.GET_FORM_FIELDS_PREVIEW, true),
       'GET',
       body
     );
@@ -100,23 +100,35 @@ const Config: React.FC = () => {
     }
   }, [formData]);
 
+  useEffect(() => {
+    const newConfigData = {
+      tabSettings: {...tabSettings}, 
+      editFormData:{...editFormData}
+    }
+    setIsClean(isEqual(newConfigData, initialConfigRef.current));
+  }, [tabSettings, editFormData]);
+
   const handleUnload = useCallback((e: BeforeUnloadEvent) => {
     if(!isClean){
       e.preventDefault();
     }
   }, [isClean]);
+  
+  
+  function parsePluginConfig(config: PluginConfig){
+    const initialTabSettings = config.tabSettings ? JSON.parse(config.tabSettings) : {
+      isFollow: false, 
+      backgroundColor: '#66767E', 
+      fontColor: '#ffffff', 
+      spaceField: '', 
+      tabs: [{startRowIndex: 0, tabName: 'タブ１'}]
+    };
 
-  useEffect(() => {
-    const newConfigData = {
-      tabSettings: tabSettings, 
-      editFormData: editFormData
-    }
-    setIsClean(isEqual(newConfigData, initialConfigRef.current));
-  }, [tabSettings, editFormData]);
-
-  function getLowerSpaceIndex(form: FormLayout, spaceId: string){
-    const targetIndex = form.layout.findIndex(field => field.type === "ROW" && field.fields.some((field) => field?.elementId === spaceId));
-    return targetIndex;
+    const initialEditFormData = config.editFormData ? JSON.parse(config.editFormData) : null;
+    return {
+      initialTabSettings,
+      initialEditFormData
+    };
   }
 
   function handleSave(){
@@ -130,7 +142,7 @@ const Config: React.FC = () => {
     if(!isClean) {
       setIsAlertOpen(true);
     } else {
-      const pluginListUrl = `${baseUrl}/k/admin/app/${appId}/plugin/`;
+      const pluginListUrl = `${baseUrl}${KINTONE_UI_URLS.ADMIN_APP_PLUGINS}/${appId}${KINTONE_UI_URLS.PLUGIN_LIST_PATH}`;
       if (window.top) {
         window.top.location.href = pluginListUrl;
       } else {
@@ -140,7 +152,7 @@ const Config: React.FC = () => {
   };
 
   return (
-    <div className="config">
+    <div className={styles.config}>
       {isAlertOpen && (
         <Alert 
           setIsAlertOpen={setIsAlertOpen}
@@ -148,9 +160,9 @@ const Config: React.FC = () => {
           setIsClean={setIsClean}
         />
       )}
-      <div className='configHeader'>
+      <div className={styles.configHeader}>
         <div 
-          className='configHeaderContents'
+          className={styles.configHeaderContents}
         >
           <DropDown 
             font='タブ開始位置' 
@@ -160,11 +172,8 @@ const Config: React.FC = () => {
             tabSettings={tabSettings}
             setTabSettings={setTabSettings}
           />
-          <div className='headerConfigContainer'>
-            <div style={{
-              display: 'flex',
-              gap: '13px',
-            }}>
+          <div className={styles.headerConfigContainer}>
+                          <div className={styles.colorConfigContainer}>
               <ColorConfig 
                 font='タブ背景色' 
                 colorType='backgroundColor' 
@@ -178,15 +187,7 @@ const Config: React.FC = () => {
                 setTabSettings={setTabSettings}
               />
               <div
-                className='clearConfig'
-                style={{
-                  cursor: 'pointer',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  padding: '7px 24px',
-                  whiteSpace: 'nowrap',
-                }}
+                className={`${styles.clearConfig} ${styles.clearConfigButton}`}
                 onClick={() => {
                   setTabSettings({
                     isFollow: false, 
@@ -201,58 +202,23 @@ const Config: React.FC = () => {
                 設定内容をクリア
               </div>
             </div>
-            <div className='configButtons'>
+                          <div className={styles.configButtons}>
               <CancelButton onClick={handleCancel} text="キャンセル" />
               <SubmitButton onClick={handleSave} text="保存" />
             </div>
           </div>
         </div>
       </div>
-      <div style={{
-        width: '100%',
-        height: '60px',
-        display: 'flex',
-        justifyContent: 'flex-start',
-        alignItems: 'center',
-        fontSize: '15px',
-        marginTop: '10px',
-      }}>
+      <div className={styles.groupSettingHeader}>
         グループ設定
       </div>
-      <div className="userRawsContainer">
+              <div className={styles.userRawsContainer}>
         {tabSettings?.spaceField !== '' ? (
           <>
-            <div style={{
-              position: 'sticky',
-              top: '0',
-              width: '100%',
-              height: '55px',
-              display: 'flex',
-              gap: '48px',
-              alignItems: 'center',
-              padding: '0 32px',
-              borderBottom: '1px solid #E6EAEA',
-              backgroundColor: '#F7F9FB',
-              zIndex: '10',
-            }}>
-              <div style={{
-                width: '130px',
-                display: 'flex',
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-              }}>行タイプ</div>
-              <div style={{
-                width: '50px',
-                display: 'flex',
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-              }}>行数</div>
-              <div style={{
-                minWidth: '300px',
-                display: 'flex',
-                justifyContent: 'flex-start',
-                alignItems: 'center',
-              }}>行に所属するフィールド</div>
+            <div className={styles.tableHeaderSticky}>
+              <div className={styles.tableHeaderType}>行タイプ</div>
+              <div className={styles.tableHeaderRow}>行数</div>
+              <div className={styles.tableHeaderFields}>行に所属するフィールド</div>
             </div>
             <UserRawsData 
                 editFormData={editFormData} 
@@ -263,12 +229,7 @@ const Config: React.FC = () => {
             />
           </>
         ) : (
-          <div style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)'
-          }}>
+          <div className={styles.noSelectionMessage}>
             タブ開始位置を選択するとフィールドが表示されます
           </div>
       )}
@@ -276,7 +237,11 @@ const Config: React.FC = () => {
       {
         openAlertToast 
         && 
-        <Toast message="設定していたスペースIDが見つからなかったためタブ設定をリセットしました。" duration={8000} backgroundColor="#d9534f" />
+        <Toast 
+          message="設定していたスペースIDが見つからなかったためタブ設定をリセットしました。" 
+          duration={8000} 
+          backgroundColor="#d9534f" 
+        />
       }
     </div>
   );

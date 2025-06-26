@@ -52,3 +52,44 @@
 .tabMarkDiv:hover {
   background-color: #a3a3a3;
 }
+
+/* Tab.tsx用のインラインスタイルクラス */
+.tab-name-styled {
+  padding: 4px 20px;
+}
+
+.tab-name-styled-with-close {
+  padding: 4px 10px 4px 20px;
+}
+
+.tab-input-base {
+  border-bottom: 1px solid;
+}
+
+.tab-input-text-measure {
+  position: absolute;
+  visibility: hidden;
+  height: auto;
+  white-space: nowrap;
+  font-size: 15px;
+  padding: 5px 0 2px 0;
+}
+
+.tab-actions-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.tab-close-icon {
+  font-size: 20px;
+}
+
+.tab-input-styled {
+  /* 動的スタイル用：backgroundColor, color, borderBottomColorはインラインで設定 */
+}
+
+.tab-close-icon-styled {
+  /* 動的スタイル用：colorはインラインで設定 */
+}

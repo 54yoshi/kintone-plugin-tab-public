@@ -96,3 +96,36 @@
 .spaceIdItem:hover {
   background-color: #d0ecfc;
 }
+
+.required-asterisk {
+  color: red;
+  padding: 0 4px;
+}
+
+.no-space-message {
+  height: 30px;
+  padding: 5px 20px;
+}
+
+.dropdown-item {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  padding: 5px 20px;
+  cursor: pointer;
+}
+
+.dropdown-item-group {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.check-icon-styled {
+  font-size: 13px;
+}
