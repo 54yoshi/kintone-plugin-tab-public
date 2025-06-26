@@ -26,22 +26,51 @@ const RawData: React.FC<Props> = ({
     return tabSettings.tabs.some(tab => tab.startRowIndex === formIndex);
   }
 
+  // function createTabGroup(nowIndex: number){
+  //   const newTabSettings = {...tabSettings};
+  //   const newTab = {
+  //     startRowIndex: nowIndex,
+  //     tabName: "",
+  //   }
+
+  //   newTabSettings.tabs.push(newTab);
+  //   newTabSettings.tabs.sort((a, b) => a.startRowIndex - b.startRowIndex);
+
+  //   const str = "foo\t123bar\nbaz\t4qux";
+  //   newTabSettings.tabs.forEach((tab, index) => {
+  //     if(tab.tabName === "" || str.includes(tab.tabName)){
+  //       tab.tabName = `タブ${index + 1}`;
+  //     }
+  //   })
+  //   setTabSettings(newTabSettings);
+  // }
+
   function createTabGroup(nowIndex: number){
     const newTabSettings = {...tabSettings};
     const newTab = {
       startRowIndex: nowIndex,
       tabName: "",
     }
-
+  
     newTabSettings.tabs.push(newTab);
     newTabSettings.tabs.sort((a, b) => a.startRowIndex - b.startRowIndex);
-
-    const str = "foo\t123bar\nbaz\t4qux";
+  
     newTabSettings.tabs.forEach((tab, index) => {
-      if(tab.tabName === "" || str.includes(tab.tabName)){
-        tab.tabName = `タブ${index + 1}`;
+      if (tab.tabName === "") {
+        let newTabName = `タブ${index + 1}`;
+        let counter = 1;
+        
+        while (newTabSettings.tabs.some((existingTab, existingIndex) => 
+          existingIndex !== index && existingTab.tabName === newTabName
+        )) {
+          counter++;
+          newTabName = `タブ${index + 1}-${counter}`;
+        }
+        
+        tab.tabName = newTabName;
       }
-    })
+    });
+    
     setTabSettings(newTabSettings);
   }
 
