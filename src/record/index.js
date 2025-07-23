@@ -2,20 +2,23 @@
   'use strict';
 
   const PLUGIN_ID = kintone.$PLUGIN_ID;
-  const rawConfig = kintone.plugin.app.getConfig(PLUGIN_ID);
   const baseUrl = location.origin;
+  const rawConfig = kintone.plugin.app.getConfig(PLUGIN_ID);
 
+  if(!rawConfig)return;
 
   let pluginConfig;
-  if(rawConfig){
+  try{
     pluginConfig = {
       tabSettings:  JSON.parse(rawConfig.tabSettings),
       editFormData: JSON.parse(rawConfig.editFormData),
     };
+  } catch (error) {
+    return;
   }
 
-  const {editFormData, tabSettings} = pluginConfig;
-  const {backgroundColor, fontColor, spaceField, tabs} = tabSettings;
+  const { tabSettings } = pluginConfig;
+  const { backgroundColor, fontColor, spaceField, tabs } = tabSettings;
 
   kintone.events.on([
     'app.record.detail.show', 
@@ -23,9 +26,6 @@
     'app.record.create.show',
   ], async function() {
     const appId = kintone.app.getId();
-    if(!pluginConfig){
-      return;
-    }
 
     const spaceFieldElement = kintone.app.record.getSpaceElement(tabSettings.spaceField);
     if(!spaceFieldElement){
@@ -41,18 +41,20 @@
       )
     );
 
-    const formLayout = await kintone.api(kintone.api.url('/k/v1/app/form/layout.json', true), 'GET', {app: appId})
+    const formLayout = await kintone.api(
+      kintone.api.url('/k/v1/app/form/layout.json', true), 
+      'GET', 
+      {app: appId}
+    )
 
     const targetIndex = findTargetIndex(formLayout, spaceField);
-
     const lowerRowNodes = rowNodes.slice(targetIndex + 1);
-
-    console.log(lowerRowNodes,'lowerRowNodes');
 
     const parentDiv = document.createElement('div');
     parentDiv.classList.add('parentDiv');
     parentDiv.style.borderBottom = `2px solid ${tabSettings.backgroundColor}`;
 
+    const activeIndex = getActiveTab(appId);
     tabs.forEach((tab, index) => {
       const tabDiv = document.createElement('div');
       tabDiv.classList.add('tab');
@@ -60,13 +62,14 @@
       parentDiv.appendChild(tabDiv);
       tabDiv.textContent = tab.tabName === '' ? `タブ${index + 1}` : tab.tabName;
 
-      if(index === 0){
+      if(index === activeIndex){
         tabDiv.style.backgroundColor = backgroundColor;
         tabDiv.style.color = fontColor;
         tabDiv.style.border = `2px solid ${tabSettings.backgroundColor}`;
       }
 
       tabDiv.addEventListener('click', () => {
+        saveActiveTab(appId, index);
         document.querySelectorAll('.tab').forEach((tabElement) => {
           tabElement.style.backgroundColor ='rgb(229, 229, 229)';
           tabElement.style.color = '#8d8d8d';
@@ -79,21 +82,32 @@
         lowerRowNodes.forEach((rowDom, domIndex) => {
           rowDom.style.display = 'none';
           if(tab.startRowIndex <= domIndex && domIndex < tabs[index + 1]?.startRowIndex ||
-            tab.startRowIndex <= domIndex && tabs[index + 1] === undefined
-          ){
+            tab.startRowIndex <= domIndex && tabs[index + 1] === undefined){
             rowDom.style.display = '';
           }
         })
       })
 
+      console.log(lowerRowNodes,'lowerRowNodes');
+      console.log(tabs,'tabs');
+
       lowerRowNodes.forEach((row, index) => {
         row.style.display = 'none';
         if(0 <= index && index < tabs[1]?.startRowIndex ||
-          0 <= index && tabs[1] === undefined
-        ){
+          0 <= index && tabs[1] === undefined){
           row.style.display = '';
         }
       })
+
+      lowerRowNodes.forEach((row, rowIndex) => {
+        row.style.display = 'none';
+        if(index === activeIndex) {
+          if(tab.startRowIndex <= rowIndex && 
+             (tabs[index + 1] ? rowIndex < tabs[index + 1].startRowIndex : true)){
+            row.style.display = '';
+          }
+        }
+      });
     })
     spaceFieldElement.appendChild(parentDiv);
 
@@ -125,14 +139,13 @@
         banner.classList.add('show');
       }, 20);
     }
-
     return;
   });
 
   kintone.events.on([
     'mobile.app.record.detail.show', 
     'mobile.app.record.edit.show',
-    'mobile.app.record.create.show',f
+    'mobile.app.record.create.show',
   ], async function() {
     const appId = kintone.mobile.app.getId();
     if(!pluginConfig){
@@ -191,8 +204,7 @@
         lowerRowNodes.forEach((rowDom, domIndex) => {
           rowDom.style.display = 'none';
           if(tab.startRowIndex <= domIndex && domIndex < tabs[index + 1]?.startRowIndex ||
-            tab.startRowIndex <= domIndex && tabs[index + 1] === undefined
-          ){
+            tab.startRowIndex <= domIndex && tabs[index + 1] === undefined){
             rowDom.style.display = '';
           }
         })
@@ -208,8 +220,6 @@
       })
     })
     spaceFieldMobile.appendChild(parentDiv);
-
-
   });
 
   function findTargetIndex(formLayout, spaceField){
@@ -241,4 +251,22 @@
     }
     return targetIndex;
   }
+
+  // SessionStorageのキー（アプリIDとレコードIDを含む）
+  const getStorageKey = (appId) => {
+    return `tabPlugin_${PLUGIN_ID}_${appId}`;
+  };
+
+  // アクティブなタブインデックスを保存
+  const saveActiveTab = (appId, tabIndex) => {
+    const key = getStorageKey(appId);
+    sessionStorage.setItem(key, tabIndex.toString());
+  };
+
+  // 保存されたアクティブなタブインデックスを取得
+  const getActiveTab = (appId) => {
+    const key = getStorageKey(appId);
+    const saved = sessionStorage.getItem(key);
+    return saved ? parseInt(saved, 10) : 0; 
+  };
 })();

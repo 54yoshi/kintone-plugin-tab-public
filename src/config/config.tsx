@@ -22,19 +22,22 @@ type PluginConfig = {
 }
 
 const Config: React.FC = () => {
+  // タブの初期値の設定
+  const defaultTabSettings = {
+    isFollow: false, 
+    backgroundColor: '#66767E', 
+    fontColor: '#ffffff', 
+    spaceField: '', 
+    tabs: [{startRowIndex: 0, tabName: 'タブ１'}]
+  }
+
   const [formData, setFormData] = useState<FormLayout | null>(null);
   const [recordData, setRecordData] = useState<KintoneRecord | null>(null);
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
   const [isClean, setIsClean] = useState<boolean>(true);
   const [openAlertToast, setOpenAlertToast] = useState<boolean>(false);
   const [editFormData, setEditFormData] = useState<EditFormLayout | null>(null);
-  const [tabSettings, setTabSettings] = useState<TabSettings>({
-    isFollow: false, 
-    backgroundColor: '#66767E', 
-    fontColor: '#ffffff', 
-    spaceField: '', 
-    tabs: [{startRowIndex: 0, tabName: 'タブ１'}]
-  });
+  const [tabSettings, setTabSettings] = useState<TabSettings>(defaultTabSettings);
 
   const initialConfigRef = useRef<{ tabSettings: TabSettings; editFormData: EditFormLayout | null }>(null);
 
@@ -74,15 +77,9 @@ const Config: React.FC = () => {
 
   useEffect(() => {
     if(formData && editFormData){
+      //スペースフィール見つからなかった場合にデータを初期化する
       if(!findSpaceField(formData, tabSettings)){
-        setTabSettings({
-          isFollow: false, 
-          backgroundColor: '#66767E', 
-          fontColor: '#ffffff', 
-          spaceField: '', 
-          
-          tabs: [{startRowIndex: 0, tabName: 'タブ１'}]
-        });
+        setTabSettings(defaultTabSettings);
         setEditFormData(null); 
         setOpenAlertToast(true);
         return;
@@ -116,26 +113,26 @@ const Config: React.FC = () => {
   
   
   function parsePluginConfig(config: PluginConfig){
-    const initialTabSettings = config.tabSettings ? JSON.parse(config.tabSettings) : {
-      isFollow: false, 
-      backgroundColor: '#66767E', 
-      fontColor: '#ffffff', 
-      spaceField: '', 
-      tabs: [{startRowIndex: 0, tabName: 'タブ１'}]
-    };
-
-    const initialEditFormData = config.editFormData ? JSON.parse(config.editFormData) : null;
-    return {
-      initialTabSettings,
-      initialEditFormData
-    };
+    let initialTabSettings;
+    let initialEditFormData;
+    try {
+      initialTabSettings = config.tabSettings ? JSON.parse(config.tabSettings) : defaultTabSettings;
+      initialEditFormData = config.editFormData ? JSON.parse(config.editFormData) : null;
+    } catch(error) {
+      console.error('JSONのparseに失敗しました。', error);
+    }
+    return { initialTabSettings, initialEditFormData };
   }
 
   function handleSave(){
-    kintone.plugin.app.setConfig({
-      tabSettings: JSON.stringify(tabSettings), 
-      editFormData: editFormData ? JSON.stringify(editFormData) : ''
-    });
+    try {
+      kintone.plugin.app.setConfig({
+        tabSettings: JSON.stringify(tabSettings), 
+        editFormData: editFormData ? JSON.stringify(editFormData) : ''
+      });
+    } catch(error) {
+      console.error('設定の保存に失敗しました。', error);
+    }
   };
 
   function handleCancel(){
@@ -173,7 +170,7 @@ const Config: React.FC = () => {
             setTabSettings={setTabSettings}
           />
           <div className={styles.headerConfigContainer}>
-                          <div className={styles.colorConfigContainer}>
+            <div className={styles.colorConfigContainer}>
               <ColorConfig 
                 font='タブ背景色' 
                 colorType='backgroundColor' 
@@ -189,20 +186,14 @@ const Config: React.FC = () => {
               <div
                 className={`${styles.clearConfig} ${styles.clearConfigButton}`}
                 onClick={() => {
-                  setTabSettings({
-                    isFollow: false, 
-                    backgroundColor: '#66767E', 
-                    fontColor: '#ffffff', 
-                    spaceField: '', 
-                    tabs: [{startRowIndex: 0, tabName: 'タブ１'}]
-                  });
+                  setTabSettings(defaultTabSettings);
                   setEditFormData(null); 
                 }}
               >
                 設定内容をクリア
               </div>
             </div>
-                          <div className={styles.configButtons}>
+            <div className={styles.configButtons}>
               <CancelButton onClick={handleCancel} text="キャンセル" />
               <SubmitButton onClick={handleSave} text="保存" />
             </div>
@@ -212,7 +203,7 @@ const Config: React.FC = () => {
       <div className={styles.groupSettingHeader}>
         グループ設定
       </div>
-              <div className={styles.userRawsContainer}>
+      <div className={styles.userRawsContainer}>
         {tabSettings?.spaceField !== '' ? (
           <>
             <div className={styles.tableHeaderSticky}>
@@ -232,7 +223,7 @@ const Config: React.FC = () => {
           <div className={styles.noSelectionMessage}>
             タブ開始位置を選択するとフィールドが表示されます
           </div>
-      )}
+        )}
       </div>
       {
         openAlertToast 

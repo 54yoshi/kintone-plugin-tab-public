@@ -157,7 +157,9 @@ const DropDown: React.FC<InsertPositionSelectProps> = ({
                           setIsOpen(false);
                         }} 
                       >
-                        {field.elementId === tabSettings?.spaceField ? <CheckIcon className={styles.checkIconStyled} /> : null}
+                        {field.elementId === tabSettings?.spaceField ? 
+                        <CheckIcon className={styles.checkIconStyled} /> 
+                        : null}
                         {field.elementId || 'スペース'}
                       </div>
                     )
