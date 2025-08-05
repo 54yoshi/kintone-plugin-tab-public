@@ -26,6 +26,7 @@
     'app.record.create.show',
   ], async function() {
     const appId = kintone.app.getId();
+    const recordId = kintone.app.record.getId();
 
     const spaceFieldElement = kintone.app.record.getSpaceElement(tabSettings.spaceField);
     if(!spaceFieldElement){
@@ -54,7 +55,7 @@
     parentDiv.classList.add('parentDiv');
     parentDiv.style.borderBottom = `2px solid ${tabSettings.backgroundColor}`;
 
-    const activeIndex = getActiveTab(appId);
+    const activeIndex = getActiveIndex(appId, recordId);
     tabs.forEach((tab, index) => {
       const tabDiv = document.createElement('div');
       tabDiv.classList.add('tab');
@@ -69,7 +70,7 @@
       }
 
       tabDiv.addEventListener('click', () => {
-        saveActiveTab(appId, index);
+        saveActiveTab(appId, index, recordId);
         document.querySelectorAll('.tab').forEach((tabElement) => {
           tabElement.style.backgroundColor ='rgb(229, 229, 229)';
           tabElement.style.color = '#8d8d8d';
@@ -88,27 +89,35 @@
         })
       })
 
-      console.log(lowerRowNodes,'lowerRowNodes');
-      console.log(tabs,'tabs');
-
-      lowerRowNodes.forEach((row, index) => {
-        row.style.display = 'none';
-        if(0 <= index && index < tabs[1]?.startRowIndex ||
-          0 <= index && tabs[1] === undefined){
-          row.style.display = '';
-        }
-      })
-
-      lowerRowNodes.forEach((row, rowIndex) => {
-        row.style.display = 'none';
-        if(index === activeIndex) {
-          if(tab.startRowIndex <= rowIndex && 
-             (tabs[index + 1] ? rowIndex < tabs[index + 1].startRowIndex : true)){
-            row.style.display = '';
-          }
-        }
-      });
     })
+    console.log(lowerRowNodes,'lowerRowNodes');
+    console.log(tabs,'tabs');
+    console.log(activeIndex,'activeIndex');
+
+    // lowerRowNodes.forEach((row, rowIndex) => {
+    //   row.style.display = 'none';
+    //   if((tabs[activeIndex]?.startRowIndex <= rowIndex && 
+    //     rowIndex < tabs[activeIndex + 1]?.startRowIndex) || 
+    //     (tabs[activeIndex + 1] === undefined && activeIndex === 0)){
+    //     row.style.display = '';
+    //   }
+    // });
+
+    lowerRowNodes.forEach((row, rowIndex) => {
+      row.style.display = 'none';
+      
+      const currentTab = tabs[activeIndex];
+      if (!currentTab) return;
+      
+      const isInCurrentTabRange = 
+        rowIndex >= currentTab.startRowIndex && 
+        (tabs[activeIndex + 1] ? rowIndex < tabs[activeIndex + 1].startRowIndex : true);
+      
+      if (isInCurrentTabRange) {
+        row.style.display = '';
+      }
+    });
+
     spaceFieldElement.appendChild(parentDiv);
 
     function showBanner(message) {
@@ -148,9 +157,7 @@
     'mobile.app.record.create.show',
   ], async function() {
     const appId = kintone.mobile.app.getId();
-    if(!pluginConfig){
-      return;
-    }
+    const recordId = kintone.mobile.app.record.getId();
     
     const spaceFieldMobile = kintone.mobile.app.record.getSpaceElement(spaceField);
 
@@ -174,6 +181,8 @@
     const targetIndex = findTargetIndex(formLayout, spaceField);
     const lowerRowNodes = rowNodes.slice(targetIndex + 1);
 
+    const activeIndex = getActiveIndex(appId, recordId);
+
     const parentDiv = document.createElement('div');
     parentDiv.classList.add('mobile-parentDiv');
     parentDiv.style.borderBottom = `2px solid ${tabSettings.backgroundColor}`;
@@ -185,13 +194,14 @@
       parentDiv.appendChild(tabDiv);
       tabDiv.textContent = tab.tabName === '' ? `タブ${index + 1}` : tab.tabName;
 
-      if(index === 0){
+      if(index === activeIndex){
         tabDiv.style.backgroundColor = backgroundColor;
         tabDiv.style.color = fontColor;
         tabDiv.style.border = `2px solid ${tabSettings.backgroundColor}`;
       }
 
       tabDiv.addEventListener('click', () => {
+        saveActiveTab(appId, index, recordId);
         document.querySelectorAll('.tab').forEach((tabElement) => {
           tabElement.style.backgroundColor ='rgb(229, 229, 229)';
           tabElement.style.color = '#8d8d8d';
@@ -209,16 +219,29 @@
           }
         })
       })
-
-      lowerRowNodes.forEach((row, index) => {
-        row.style.display = 'none';
-        if(0 <= index && index < tabs[1]?.startRowIndex ||
-          0 <= index && tabs[1] === undefined
-        ){
-          row.style.display = '';
-        }
-      })
     })
+
+    // lowerRowNodes.forEach((row, rowIndex) => {
+    //   row.style.display = 'none';
+    //   if((tabs[activeIndex]?.startRowIndex <= rowIndex && 
+    //     rowIndex < tabs[activeIndex + 1]?.startRowIndex)|| 
+    //     (tabs[activeIndex + 1] === undefined && activeIndex === 0)){
+    //     row.style.display = '';
+    //   }
+    // });
+
+    lowerRowNodes.forEach((row, rowIndex) => {
+      row.style.display = 'none';
+
+      const currentTab = tabs[activeIndex];
+      if(!currentTab) return;
+
+      const isInCurrentTabRange = 
+        rowIndex >= currentTab.startRowIndex && 
+        (tabs[activeIndex + 1] ? rowIndex < tabs[activeIndex + 1].startRowIndex : true);
+
+      if(isInCurrentTabRange) row.style.display = '';
+    });
     spaceFieldMobile.appendChild(parentDiv);
   });
 
@@ -254,19 +277,30 @@
 
   // SessionStorageのキー（アプリIDとレコードIDを含む）
   const getStorageKey = (appId) => {
-    return `tabPlugin_${PLUGIN_ID}_${appId}`;
+    return `tabPlugin_${PLUGIN_ID}`;
   };
 
   // アクティブなタブインデックスを保存
-  const saveActiveTab = (appId, tabIndex) => {
+  const saveActiveTab = (appId, tabIndex, recordId) => {
+    console.log('appId',appId);
     const key = getStorageKey(appId);
-    sessionStorage.setItem(key, tabIndex.toString());
+    const saveItem = {
+      activeIndex: tabIndex,
+      recordId: recordId,
+      appId: appId,
+    }
+    sessionStorage.setItem(key, JSON.stringify(saveItem));
   };
 
   // 保存されたアクティブなタブインデックスを取得
-  const getActiveTab = (appId) => {
+  const getActiveIndex = (appId, recordId) => {
     const key = getStorageKey(appId);
-    const saved = sessionStorage.getItem(key);
-    return saved ? parseInt(saved, 10) : 0; 
+    const saved = JSON.parse(sessionStorage.getItem(key));
+
+    if(!saved || recordId !== saved.recordId || appId !== saved.appId){
+      return 0;
+    }
+
+    return saved.activeIndex; 
   };
 })();
