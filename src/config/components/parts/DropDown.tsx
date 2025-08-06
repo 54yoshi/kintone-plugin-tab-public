@@ -63,9 +63,7 @@ const DropDown: React.FC<InsertPositionSelectProps> = ({
     }
     const spaceIndex = getLowerSpaceIndex(fetchFormData, spaceId);
     
-    if(spaceIndex === -1){
-      return;
-    }
+    if(spaceIndex === -1)return;
 
     // editFormDataを更新
     const lowerLayout: LayoutItem[] = fetchFormData.layout.slice(spaceIndex + 1);

@@ -11,7 +11,7 @@
   try{
     pluginConfig = {
       tabSettings:  JSON.parse(rawConfig.tabSettings),
-      editFormData: JSON.parse(rawConfig.editFormData),
+      // editFormData: JSON.parse(rawConfig.editFormData),
     };
   } catch (error) {
     return;

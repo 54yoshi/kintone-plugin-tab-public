@@ -93,7 +93,6 @@ h1 {
 @media (max-width: 1230px) {
   .configButtons {
     position: static;
-    margin-top: 20px;
   }
 
   .headerConfigContainer {
@@ -104,6 +103,7 @@ h1 {
 /* Config.tsx用のインラインスタイルクラス */
 .color-config-container {
   display: flex;
+  align-items: center;
   gap: 13px;
 }
 
@@ -114,6 +114,7 @@ h1 {
   align-items: center;
   padding: 7px 24px;
   white-space: nowrap;
+  height: 40px;
 }
 
 .group-setting-header {

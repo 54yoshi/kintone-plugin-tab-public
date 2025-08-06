@@ -18,7 +18,7 @@ const baseUrl = location.origin;
 
 type PluginConfig = {
   tabSettings: string;
-  editFormData: string | null;
+  // editFormData: string | null;
 }
 
 const Config: React.FC = () => {
@@ -39,20 +39,20 @@ const Config: React.FC = () => {
   const [editFormData, setEditFormData] = useState<EditFormLayout | null>(null);
   const [tabSettings, setTabSettings] = useState<TabSettings>(defaultTabSettings);
 
-  const initialConfigRef = useRef<{ tabSettings: TabSettings; editFormData: EditFormLayout | null }>(null);
+  const initialConfigRef = useRef<{ tabSettings: TabSettings;}>(null);
 
   useEffect(() => {
     const config = kintone.plugin.app.getConfig(PLUGIN_ID);
     const body = { app: appId };
 
-    const { initialTabSettings, initialEditFormData } = parsePluginConfig(config);
+    const initialTabSettings  = parsePluginConfig(config);
   
     setTabSettings(initialTabSettings);
-    setEditFormData(initialEditFormData);
+    // setEditFormData(initialEditFormData);
   
     initialConfigRef.current = {
       tabSettings: cloneDeep(initialTabSettings),
-      editFormData: cloneDeep(initialEditFormData),
+      // editFormData: cloneDeep(initialEditFormData),
     };
 
     const fetchFormLayout = kintone.api(
@@ -69,10 +69,23 @@ const Config: React.FC = () => {
 
     Promise.all([fetchFormLayout, fetchRecordData])
       .then(([formLayout, recordData]) => {
+        if(initialTabSettings?.spaceField !== ''){
+          const spaceIndex = getLowerSpaceIndex(formLayout, initialTabSettings?.spaceField);
+          const lowerLayout = formLayout.layout.slice(spaceIndex + 1);
+          const newFormData: FormLayout = {
+            layout: lowerLayout,
+            revision: formLayout.revision
+          };
+      
+          if (newFormData !== undefined && setEditFormData) {
+            setEditFormData(newFormData);
+          }
+        }
         setFormData(formLayout);
         setRecordData(recordData);
       })
-      .catch(error => console.error('Error fetching JSON:', error));
+      .catch(error => console.error('Error fetching JSON:', error)
+    );
   }, []);
 
   useEffect(() => {
@@ -99,11 +112,10 @@ const Config: React.FC = () => {
 
   useEffect(() => {
     const newConfigData = {
-      tabSettings: {...tabSettings}, 
-      editFormData:{...editFormData}
+      tabSettings: {...tabSettings}
     }
     setIsClean(isEqual(newConfigData, initialConfigRef.current));
-  }, [tabSettings, editFormData]);
+  }, [tabSettings]);
 
   const handleUnload = useCallback((e: BeforeUnloadEvent) => {
     if(!isClean){
@@ -114,21 +126,21 @@ const Config: React.FC = () => {
   
   function parsePluginConfig(config: PluginConfig){
     let initialTabSettings;
-    let initialEditFormData;
     try {
       initialTabSettings = config.tabSettings ? JSON.parse(config.tabSettings) : defaultTabSettings;
-      initialEditFormData = config.editFormData ? JSON.parse(config.editFormData) : null;
+      // initialEditFormData = config.editFormData ? JSON.parse(config.editFormData) : null;
     } catch(error) {
       console.error('JSONのparseに失敗しました。', error);
     }
-    return { initialTabSettings, initialEditFormData };
+    return initialTabSettings;
   }
 
   function handleSave(){
+    console.log(editFormData);
     try {
       kintone.plugin.app.setConfig({
         tabSettings: JSON.stringify(tabSettings), 
-        editFormData: editFormData ? JSON.stringify(editFormData) : ''
+        // editFormData: editFormData ? JSON.stringify(editFormData) : ''
       });
     } catch(error) {
       console.error('設定の保存に失敗しました。', error);
